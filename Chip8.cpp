@@ -118,6 +118,41 @@ void Chip8::tick()
       I = opcode & 0x0FFF;
       pc += 2;
       break;
+   case 0xD000:   // 0xDXYN: Draw sprite at coordinates VX, VY with a width of 8 pixels and height of N.  Sprite starts at I
+      unsigned short x = V[(opcode & 0x0F00) >> 8];
+      unsigned short y = V[(opcode & 0x00F0) >> 4];
+      unsigned short height = opcode & 0x000F;
+      unsigned short pix;
+
+      V[0xF] = 0;
+      for(int yline = 0; yline <  height; yline++)
+      {
+         pix = memory[I + yline];
+         for(int xline = 0; xline < 8; xline++)
+         {
+            if((pix & (0x80 >> xline)) != 0)
+            {
+               if(graphics[(x + xline + ((y + yline) * PIXELS_X))] == 1)
+                  V[0xF] = 1;
+               graphics[x + xline + ((y + yline) * PIXELS_X)] ^= 1;
+            }
+         }
+      }
+
+      drawFlag = true;
+      pc += 2;
+      break;
+   case 0xE000:
+      switch(opcode & 0x00FF)
+      {
+      case 0x009E:   // 0xEX9E skips the next instruction if the key stored in VX is pressed
+         if(key[V[(opcode & 0x0F00) >> 8]] != 0)
+            pc += 4;
+         else
+            pc += 2;
+         break;
+      }
+      break;
    case 0xF000:
       switch(opcode & 0x00FF)
       {
