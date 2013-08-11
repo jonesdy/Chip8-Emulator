@@ -178,12 +178,22 @@ void Chip8::tick()
                pc += 2;
                break;
             }
+         case 0x0005:   // 0x8XY5: VY is subtracted from VX.  VF is set to 0 when there's a borrow, and 1 when there isn't
+            {
+               if(V[(opcode & 0x0F00) >> 8] < V[(opcode & 0x00F0) >> 8])      // VX < VY, borrow
+                  V[0xF] = 0;
+               else
+                  V[0xF] = 1;
+               V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 8];
+               pc += 2;
+               break;
+            }
          case 0x0007:   // 0x8XY7: Sets VX to VY minus VX.  VF is set to 0 when there's a borrow, and 1 when there isn't
             {
-               if(V[(opcode & 0x00F0) >> 4] < V[(opcode & 0x0F00) >> 8])      // VY < VX
-                  V[0xF] = 1;
-               else
+               if(V[(opcode & 0x00F0) >> 4] < V[(opcode & 0x0F00) >> 8])      // VY < VX, borrow
                   V[0xF] = 0;
+               else
+                  V[0xF] = 1;
                V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8];
                pc += 2;
                break;
@@ -275,6 +285,12 @@ void Chip8::tick()
          case 0x0015:   // 0xFX15: Sets the delay timer to VX
             {
                delayTimer = V[(opcode & 0x0F00) >> 8];
+               pc += 2;
+               break;
+            }
+         case 0x0018:   // 0xFX18: Sets the sound timer to VX
+            {
+               soundTimer = V[(opcode & 0x0F00) >> 8];
                pc += 2;
                break;
             }
