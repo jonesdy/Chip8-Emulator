@@ -96,7 +96,8 @@ void Chip8::tick()
          pc = stack[--sp];
          break;
       }
-   case 0x2000:   // 2NNN: Call subroutine at NNN
+      break;
+   case 0x2000:   // 0x2NNN: Call subroutine at NNN
       stack[sp++] = pc;
       pc = opcode & 0x0FFF;
       break;
@@ -112,9 +113,21 @@ void Chip8::tick()
          pc += 2;
          break;
       }
-   case 0xA000:   // ANNN: Sets I to the address NNN
+      break;
+   case 0xA000:   // 0xANNN: Sets I to the address NNN
       I = opcode & 0x0FFF;
       pc += 2;
+      break;
+   case 0xF000:
+      switch(opcode & 0x00FF)
+      {
+      case 0x0033:   // 0xFX33: Stores the binary-coded decimal representation of VX at I, I + 1, and I + 2
+         memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
+         memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
+         memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
+         pc += 2;
+         break;
+      }
       break;
 
    default:
