@@ -109,10 +109,24 @@ void Chip8::tick()
          }
          break;
       }
+   case 0x1000:   // 0x1NNN: Jump to address NNN
+      {
+         pc = opcode & 0x0FFF;
+         break;
+      }
    case 0x2000:   // 0x2NNN: Call subroutine at NNN
       {
          stack[sp++] = pc;
          pc = opcode & 0x0FFF;
+         break;
+      }
+   case 0x3000:   // 0x3XNN: Skips the instruction if VX equals NN
+      {
+         unsigned char num = opcode & 0x00FF;
+         if(V[(opcode & 0x0F00) >> 8] == num)
+            pc += 4;
+         else
+            pc += 2;
          break;
       }
    case 0x6000:   // 0x6XNN: Sets VX to NN
@@ -204,6 +218,18 @@ void Chip8::tick()
       {
          switch(opcode & 0x00FF)
          {
+         case 0x0007:   // 0xFX07: Sets VX to the value of the delay timer
+            {
+               V[(opcode & 0x0F00) >> 8] = delayTimer;
+               pc += 2;
+               break;
+            }
+         case 0x0015:   // 0xFX15: Sets the delay timer to VX
+            {
+               delayTimer = V[(opcode & 0x0F00) >> 8];
+               pc += 2;
+               break;
+            }
          case 0x0029:   // 0xFX29: Sets I to the location of the sprite for the character in VX
             {
                unsigned char ch = V[(opcode & 0x0F00) >> 8];
