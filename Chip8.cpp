@@ -100,7 +100,7 @@ void Chip8::tick()
             clearScreen();
             break;
          case 0x000E:   // 0x00EE: Returns from subroutine
-            pc = stack[--sp];
+            pc = stack[--sp] + 2;
             break;
          default:
             {
