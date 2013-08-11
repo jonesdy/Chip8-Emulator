@@ -98,6 +98,10 @@ void Chip8::tick()
          case 0x000E:   // 0x00EE: Returns from subroutine
             pc = stack[--sp];
             break;
+         default:
+            {
+               std::cout<<"Unknown opcode: 0x"<<std::hex<<opcode<<"\n";
+            }
          }
          break;
       }
@@ -126,6 +130,10 @@ void Chip8::tick()
                V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
                pc += 2;
                break;
+            }
+         default:
+            {
+               std::cout<<"Unknown opcode: 0x"<<std::hex<<opcode<<"\n";
             }
          }
          break;
@@ -174,6 +182,10 @@ void Chip8::tick()
                   pc += 2;
                break;
             }
+         default:
+            {
+               std::cout<<"Unknown opcode: 0x"<<std::hex<<opcode<<"\n";
+            }
          }
          break;
       }
@@ -189,11 +201,25 @@ void Chip8::tick()
                pc += 2;
                break;
             }
+         case 0x0065:   // 0xFX65: Fills V0 to VX with values from memory starting at address I
+            {
+               unsigned char numRegs = (opcode & 0x0F00) >> 8;
+               for(int i = 0; i < numRegs; i++)
+                  V[i] = memory[I + (i * 2)];
+               pc += 2;
+               break;
+            }
+         default:
+            {
+               std::cout<<"Unknown opcode: 0x"<<std::hex<<opcode<<"\n";
+            }
          }
          break;
       }
    default:
-      std::cout<<"Unknown opcode: 0x"<<std::hex<<opcode<<"\n";
+      {
+         std::cout<<"Unknown opcode: 0x"<<std::hex<<opcode<<"\n";
+      }
    }
 
    // Update timers
