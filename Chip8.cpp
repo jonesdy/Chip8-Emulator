@@ -121,6 +121,13 @@ void Chip8::tick()
          pc += 2;
          break;
       }
+   case 0x7000:   // 0x7XNN: Adds NN to VX
+      {
+         unsigned char add = opcode & 0x00FF;
+         V[(opcode & 0x0F00) >> 8] += add;
+         pc += 2;
+         break;
+      }
    case 0x8000:
       {
          switch(opcode & 0x000F)
