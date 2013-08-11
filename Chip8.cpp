@@ -90,101 +90,101 @@ void Chip8::tick()
    {
    case 0x0000:
       {
-      switch(opcode & 0x000F)
-      {
-      case 0x0000:   // 0x00E0: Clear screen
-         clearScreen();
+         switch(opcode & 0x000F)
+         {
+         case 0x0000:   // 0x00E0: Clear screen
+            clearScreen();
+            break;
+         case 0x000E:   // 0x00EE: Returns from subroutine
+            pc = stack[--sp];
+            break;
+         }
          break;
-      case 0x000E:   // 0x00EE: Returns from subroutine
-         pc = stack[--sp];
-         break;
-      }
-      break;
       }
    case 0x2000:   // 0x2NNN: Call subroutine at NNN
       {
-      stack[sp++] = pc;
-      pc = opcode & 0x0FFF;
-      break;
+         stack[sp++] = pc;
+         pc = opcode & 0x0FFF;
+         break;
       }
    case 0x8000:
       {
-      switch(opcode & 0x000F)
-      {
-      case 0x0004:   // 0x8XY4: Add VX to VY and set VF if needed
+         switch(opcode & 0x000F)
          {
-         if(V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8]))   // Value at VY is larger than (max - value at VX)
-            V[0xF] = 1;
-         else
-            V[0xF] = 0;
-         V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
-         pc += 2;
-         break;
+         case 0x0004:   // 0x8XY4: Add VX to VY and set VF if needed
+            {
+               if(V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8]))   // Value at VY is larger than (max - value at VX)
+                  V[0xF] = 1;
+               else
+                  V[0xF] = 0;
+               V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
+               pc += 2;
+               break;
+            }
          }
-      }
-      break;
+         break;
       }
    case 0xA000:   // 0xANNN: Sets I to the address NNN
       {
-      I = opcode & 0x0FFF;
-      pc += 2;
-      break;
+         I = opcode & 0x0FFF;
+         pc += 2;
+         break;
       }
    case 0xD000:   // 0xDXYN: Draw sprite at coordinates VX, VY with a width of 8 pixels and height of N.  Sprite starts at I
       {
-      unsigned short x = V[(opcode & 0x0F00) >> 8];
-      unsigned short y = V[(opcode & 0x00F0) >> 4];
-      unsigned short height = opcode & 0x000F;
-      unsigned short pix;
+         unsigned short x = V[(opcode & 0x0F00) >> 8];
+         unsigned short y = V[(opcode & 0x00F0) >> 4];
+         unsigned short height = opcode & 0x000F;
+         unsigned short pix;
 
-      V[0xF] = 0;
-      for(int yline = 0; yline <  height; yline++)
-      {
-         pix = memory[I + yline];
-         for(int xline = 0; xline < 8; xline++)
+         V[0xF] = 0;
+         for(int yline = 0; yline <  height; yline++)
          {
-            if((pix & (0x80 >> xline)) != 0)
+            pix = memory[I + yline];
+            for(int xline = 0; xline < 8; xline++)
             {
-               if(graphics[(x + xline + ((y + yline) * PIXELS_X))] == 1)
-                  V[0xF] = 1;
-               graphics[x + xline + ((y + yline) * PIXELS_X)] ^= 1;
+               if((pix & (0x80 >> xline)) != 0)
+               {
+                  if(graphics[(x + xline + ((y + yline) * PIXELS_X))] == 1)
+                     V[0xF] = 1;
+                  graphics[x + xline + ((y + yline) * PIXELS_X)] ^= 1;
+               }
             }
          }
-      }
 
-      drawFlag = true;
-      pc += 2;
-      break;
+         drawFlag = true;
+         pc += 2;
+         break;
       }
    case 0xE000:
       {
-      switch(opcode & 0x00FF)
-      {
-      case 0x009E:   // 0xEX9E skips the next instruction if the key stored in VX is pressed
+         switch(opcode & 0x00FF)
          {
-         if(key[V[(opcode & 0x0F00) >> 8]] != 0)
-            pc += 4;
-         else
-            pc += 2;
-         break;
+         case 0x009E:   // 0xEX9E skips the next instruction if the key stored in VX is pressed
+            {
+               if(key[V[(opcode & 0x0F00) >> 8]] != 0)
+                  pc += 4;
+               else
+                  pc += 2;
+               break;
+            }
          }
-      }
-      break;
+         break;
       }
    case 0xF000:
       {
-      switch(opcode & 0x00FF)
-      {
-      case 0x0033:   // 0xFX33: Stores the binary-coded decimal representation of VX at I, I + 1, and I + 2
+         switch(opcode & 0x00FF)
          {
-         memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
-         memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
-         memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
-         pc += 2;
-         break;
+         case 0x0033:   // 0xFX33: Stores the binary-coded decimal representation of VX at I, I + 1, and I + 2
+            {
+               memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
+               memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
+               memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
+               pc += 2;
+               break;
+            }
          }
-      }
-      break;
+         break;
       }
    default:
       std::cout<<"Unknown opcode: 0x"<<std::hex<<opcode<<"\n";
