@@ -46,9 +46,12 @@ class Chip8
    void loadFontSet();
    void drawGraphics();
    void tick();
-   void setKeys();
+   void setKeys(sf::Event evt);
    void clearScreen();
-   void printMemory();                 // Useful for debugging
+
+   // Debugging functions
+   void dumpMemory();
+   void dumpKeys();
 public:
    Chip8();
    void loadProgram(std::string fileName);
