@@ -87,6 +87,7 @@ void Chip8::tick()
    switch(opcode & 0xF000)
    {
    case 0x0000:
+      {
       switch(opcode & 0x000F)
       {
       case 0x0000:   // 0x00E0: Clear screen
@@ -97,14 +98,19 @@ void Chip8::tick()
          break;
       }
       break;
+      }
    case 0x2000:   // 0x2NNN: Call subroutine at NNN
+      {
       stack[sp++] = pc;
       pc = opcode & 0x0FFF;
       break;
+      }
    case 0x8000:
+      {
       switch(opcode & 0x000F)
       {
       case 0x0004:   // 0x8XY4: Add VX to VY and set VF if needed
+         {
          if(V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8]))   // Value at VY is larger than (max - value at VX)
             V[0xF] = 1;
          else
@@ -112,13 +118,18 @@ void Chip8::tick()
          V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
          pc += 2;
          break;
+         }
       }
       break;
+      }
    case 0xA000:   // 0xANNN: Sets I to the address NNN
+      {
       I = opcode & 0x0FFF;
       pc += 2;
       break;
+      }
    case 0xD000:   // 0xDXYN: Draw sprite at coordinates VX, VY with a width of 8 pixels and height of N.  Sprite starts at I
+      {
       unsigned short x = V[(opcode & 0x0F00) >> 8];
       unsigned short y = V[(opcode & 0x00F0) >> 4];
       unsigned short height = opcode & 0x000F;
@@ -142,29 +153,37 @@ void Chip8::tick()
       drawFlag = true;
       pc += 2;
       break;
+      }
    case 0xE000:
+      {
       switch(opcode & 0x00FF)
       {
       case 0x009E:   // 0xEX9E skips the next instruction if the key stored in VX is pressed
+         {
          if(key[V[(opcode & 0x0F00) >> 8]] != 0)
             pc += 4;
          else
             pc += 2;
          break;
+         }
       }
       break;
+      }
    case 0xF000:
+      {
       switch(opcode & 0x00FF)
       {
       case 0x0033:   // 0xFX33: Stores the binary-coded decimal representation of VX at I, I + 1, and I + 2
+         {
          memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
          memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
          memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
          pc += 2;
          break;
+         }
       }
       break;
-
+      }
    default:
       std::cout<<"Unknown opcode: 0x"<<std::hex<<opcode<<"\n";
    }
