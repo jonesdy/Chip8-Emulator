@@ -107,6 +107,12 @@ void Chip8::tick()
          pc = opcode & 0x0FFF;
          break;
       }
+   case 0x6000:   // 0x6XNN: Sets VX to NN
+      {
+         V[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
+         pc += 2;
+         break;
+      }
    case 0x8000:
       {
          switch(opcode & 0x000F)
@@ -304,6 +310,16 @@ void Chip8::dumpMemory()
 
    for(int i = 0; i < MEMORY_SIZE; i++)
       std::cout<<std::hex<<(int)memory[i];
+
+   std::cout<<"\n";
+
+}
+
+void Chip8::dumpRegisters()
+{
+
+   for(int i = 0; i < NUM_REGISTERS; i++)
+      std::cout<<std::hex<<(int)V[i];
 
    std::cout<<"\n";
 

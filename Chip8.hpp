@@ -51,6 +51,7 @@ class Chip8
 
    // Debugging functions
    void dumpMemory();
+   void dumpRegisters();
    void dumpKeys();
 public:
    Chip8();
