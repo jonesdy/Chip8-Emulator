@@ -63,6 +63,8 @@ void Chip8::loadFontSet()
 void Chip8::drawGraphics()
 {
 
+   window.clear();
+
    for(int i = 0; i < PIXELS_X; i++)
    {
       for(int j = 0; j < PIXELS_Y; j++)
@@ -74,6 +76,8 @@ void Chip8::drawGraphics()
          }
       }
    }
+
+   window.display();
 
    drawFlag = false;
 
@@ -193,6 +197,13 @@ void Chip8::tick()
       {
          switch(opcode & 0x00FF)
          {
+         case 0x0029:   // 0xFX29: Sets I to the location of the sprite for the character in VX
+            {
+               unsigned char ch = V[(opcode & 0x0F00) >> 8];
+               I = ch * 10;      // 10 bytes per character
+               pc += 2;
+               break;
+            }
          case 0x0033:   // 0xFX33: Stores the binary-coded decimal representation of VX at I, I + 1, and I + 2
             {
                memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
@@ -414,9 +425,6 @@ void Chip8::run()
             setKeys(event);
       }
 
-      // Clear the window
-      window.clear();
-
       // The clock cycle for the CPU needs to be 60Hz
       sf::Time timeElapsed = clock.restart();
       if(timeElapsed > FRAMETIME)
@@ -428,9 +436,6 @@ void Chip8::run()
       // Draw the graphics
       if(drawFlag)
          drawGraphics();
-
-      // Display the window
-      window.display();
    }
 
 }
