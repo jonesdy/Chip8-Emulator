@@ -26,6 +26,7 @@ Chip8::Chip8()
    for(int i = 0; i < NUM_KEYS; i++)
       key[i] = 0;
    drawFlag = false;
+   srand(time(NULL));
 
    // Load fontset
    loadFontSet();
@@ -129,6 +130,15 @@ void Chip8::tick()
             pc += 2;
          break;
       }
+   case 0x4000:   // 0x4XNN: Skips the next instruction if VX doesn't equal NN
+      {
+         unsigned char num = opcode & 0x00FF;
+         if(V[(opcode & 0x0F00) >> 8] == num)
+            pc += 2;
+         else
+            pc += 4;
+         break;
+      }
    case 0x6000:   // 0x6XNN: Sets VX to NN
       {
          V[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
@@ -146,6 +156,18 @@ void Chip8::tick()
       {
          switch(opcode & 0x000F)
          {
+         case 0x0000:   // 0x8XY0: Sets VX to the value of VY
+            {
+               V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
+               pc += 2;
+               break;
+            }
+         case 0x0002:   // 0x8XY2: Sets VX to VX and VY
+            {
+               V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] & V[(opcode & 0x00F0) >> 4];
+               pc += 2;
+               break;
+            }
          case 0x0004:   // 0x8XY4: Add VX to VY and set VF if needed
             {
                if(V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8]))   // Value at VY is larger than (max - value at VX)
@@ -153,6 +175,16 @@ void Chip8::tick()
                else
                   V[0xF] = 0;
                V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
+               pc += 2;
+               break;
+            }
+         case 0x0007:   // 0x8XY7: Sets VX to VY minus VX.  VF is set to 0 when there's a borrow, and 1 when there isn't
+            {
+               if(V[(opcode & 0x00F0) >> 4] < V[(opcode & 0x0F00) >> 8])      // VY < VX
+                  V[0xF] = 1;
+               else
+                  V[0xF] = 0;
+               V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8];
                pc += 2;
                break;
             }
@@ -166,6 +198,14 @@ void Chip8::tick()
    case 0xA000:   // 0xANNN: Sets I to the address NNN
       {
          I = opcode & 0x0FFF;
+         pc += 2;
+         break;
+      }
+   case 0xC000:   // 0xCXNN: Sets VX to a random number and NN
+      {
+         unsigned char andNum = opcode & 0x00FF;
+         unsigned char randNum = rand();
+         V[(opcode & 0x0F00) >> 8] = andNum & randNum;
          pc += 2;
          break;
       }
@@ -205,6 +245,14 @@ void Chip8::tick()
                   pc += 4;
                else
                   pc += 2;
+               break;
+            }
+         case 0x00A1:   // 0xEX9E skips the next instruction if the key stored in VX isn't pressed
+            {
+               if(key[V[(opcode & 0x0F00) >> 8]] != 0)
+                  pc += 2;
+               else
+                  pc += 4;
                break;
             }
          default:
