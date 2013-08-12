@@ -171,7 +171,7 @@ void Chip8::tick()
                pc += 2;
                break;
             }
-         case 0x0001:   // 0x8XY1: Sets VX to VX or Y
+         case 0x0001:   // 0x8XY1: Sets VX to VX or VY
             {
                V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
                pc += 2;
@@ -201,11 +201,11 @@ void Chip8::tick()
             }
          case 0x0005:   // 0x8XY5: VY is subtracted from VX.  VF is set to 0 when there's a borrow, and 1 when there isn't
             {
-               if(V[(opcode & 0x0F00) >> 8] < V[(opcode & 0x00F0) >> 8])      // VX < VY, borrow
+               if(V[(opcode & 0x0F00) >> 8] < V[(opcode & 0x00F0) >> 4])      // VX < VY, borrow
                   V[0xF] = 0;
                else
                   V[0xF] = 1;
-               V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 8];
+               V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
                pc += 2;
                break;
             }
