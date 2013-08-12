@@ -99,6 +99,7 @@ void Chip8::tick()
          {
          case 0x0000:   // 0x00E0: Clear screen
             clearScreen();
+            pc += 2;
             break;
          case 0x000E:   // 0x00EE: Returns from subroutine
             pc = stack[--sp] + 2;
@@ -133,10 +134,10 @@ void Chip8::tick()
    case 0x4000:   // 0x4XNN: Skips the next instruction if VX doesn't equal NN
       {
          unsigned char num = opcode & 0x00FF;
-         if(V[(opcode & 0x0F00) >> 8] == num)
-            pc += 2;
-         else
+         if(V[(opcode & 0x0F00) >> 8] != num)
             pc += 4;
+         else
+            pc += 2;
          break;
       }
    case 0x5000:   // 0x5XY0: Skips the next instruction if VX equals VY
@@ -281,7 +282,7 @@ void Chip8::tick()
             {
                if((pix & (0x80 >> xline)) != 0)
                {
-                  if(graphics[(x + xline + ((y + yline) * PIXELS_X))] == 1)
+                  if(graphics[x + xline + ((y + yline) * PIXELS_X)] == 1)
                      V[0xF] = 1;
                   graphics[x + xline + ((y + yline) * PIXELS_X)] ^= 1;
                }
@@ -331,7 +332,19 @@ void Chip8::tick()
             }
          case 0x000A:   // 0xFX0A: A key press is awaited, and then stored in VX
             {
-               std::cout<<"0xFX0A not implemented yet\n";
+               bool keyPressed = false;
+
+               for(int i = 0; i < NUM_KEYS; i++)
+               {
+                  if(key[i] != 0)
+                  {
+                     V[(opcode & 0x0F00) >> 8] = i;
+                     keyPressed = true;
+                  }
+               }
+
+               if(keyPressed)
+                  pc += 2;       // Continue once a key is pressed
                break;
             }
          case 0x0015:   // 0xFX15: Sets the delay timer to VX
@@ -348,6 +361,11 @@ void Chip8::tick()
             }
          case 0x001E:   // 0xFX1E: Adds VX to I
             {
+               if(I + V[(opcode & 0x0F00) >> 8] > 0xFFF) // Flag set for overflow
+                  V[0xF] = 1;
+               else
+                  V[0xF] = 0;
+
                I += V[(opcode & 0x0F00) >> 8];
                pc += 2;
                break;
@@ -355,7 +373,7 @@ void Chip8::tick()
          case 0x0029:   // 0xFX29: Sets I to the location of the sprite for the character in VX
             {
                unsigned char ch = V[(opcode & 0x0F00) >> 8];
-               I = ch * 10;      // 10 bytes per character
+               I = ch * 5;      // Height is 5
                pc += 2;
                break;
             }
@@ -371,7 +389,10 @@ void Chip8::tick()
             {
                unsigned char numRegs = (opcode & 0x0F00) >> 8;
                for(int i = 0; i < numRegs; i++)
-                  memory[I + (i * 2)] = V[i];
+                  memory[I + i] = V[i];
+
+               // Need to change I as well
+               I += ((opcode & 0x0F00) >> 8) + 1;
                pc += 2;
                break;
             }
@@ -379,7 +400,10 @@ void Chip8::tick()
             {
                unsigned char numRegs = (opcode & 0x0F00) >> 8;
                for(int i = 0; i < numRegs; i++)
-                  V[i] = memory[I + (i * 2)];
+                  V[i] = memory[I + i];
+
+               // Need to change I as well
+               I += ((opcode & 0x0F00) >> 8) + 1;
                pc += 2;
                break;
             }
@@ -436,6 +460,8 @@ void Chip8::clearScreen()
 
    for(int i = 0; i < PIXELS_X * PIXELS_Y; i++)
       graphics[i] = 0;
+
+   drawFlag = true;
 
 }
 
