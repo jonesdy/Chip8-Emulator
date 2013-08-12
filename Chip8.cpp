@@ -23,8 +23,7 @@ Chip8::Chip8()
    for(int i = 0; i < STACK_SIZE; i++)
       stack[i] = 0;
    sp = 0;
-   for(int i = 0; i < NUM_KEYS; i++)
-      key[i] = 0;
+   clearKeys();
    drawFlag = false;
    srand(time(NULL));
 
@@ -342,92 +341,25 @@ void Chip8::tick()
 
 }
 
-void Chip8::setKeys(sf::Event evt)
+void Chip8::setKeys()
 {
 
-   switch(evt.key.code)
-   {
-   case sf::Keyboard::Num1:
-      {
-         key[1] = 1;
-         break;
-      }
-   case sf::Keyboard::Num2:
-      {
-         key[2] = 1;
-         break;
-      }
-   case sf::Keyboard::Num3:
-      {
-         key[3] = 1;
-         break;
-      }
-   case sf::Keyboard::Num4:
-      {
-         key[0xC] = 1;
-         break;
-      }
-   case sf::Keyboard::Q:
-      {
-         key[4] = 1;
-         break;
-      }
-   case sf::Keyboard::W:
-      {
-         key[5] = 1;
-         break;
-      }
-   case sf::Keyboard::E:
-      {
-         key[6] = 1;
-         break;
-      }
-   case sf::Keyboard::R:
-      {
-         key[0xD] = 1;
-         break;
-      }
-   case sf::Keyboard::A:
-      {
-         key[7] = 1;
-         break;
-      }
-   case sf::Keyboard::S:
-      {
-         key[8] = 1;
-         break;
-      }
-   case sf::Keyboard::D:
-      {
-         key[9] = 1;
-         break;
-      }
-   case sf::Keyboard::F:
-      {
-         key[0xE] = 1;
-         break;
-      }
-   case sf::Keyboard::Z:
-      {
-         key[0xA] = 1;
-         break;
-      }
-   case sf::Keyboard::X:
-      {
-         key[0] = 1;
-         break;
-      }
-   case sf::Keyboard::C:
-      {
-         key[0xB] = 1;
-         break;
-      }
-   case sf::Keyboard::V:
-      {
-         key[0xF] = 1;
-         break;
-      }
-   }
+   key[1] = sf::Keyboard::isKeyPressed(sf::Keyboard::Num1);
+   key[2] = sf::Keyboard::isKeyPressed(sf::Keyboard::Num2);
+   key[3] = sf::Keyboard::isKeyPressed(sf::Keyboard::Num3);
+   key[0xC] = sf::Keyboard::isKeyPressed(sf::Keyboard::Num4);
+   key[4] = sf::Keyboard::isKeyPressed(sf::Keyboard::Q);
+   key[5] = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
+   key[6] = sf::Keyboard::isKeyPressed(sf::Keyboard::E);
+   key[0xD] = sf::Keyboard::isKeyPressed(sf::Keyboard::R);
+   key[7] = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
+   key[8] = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
+   key[9] = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
+   key[0xE] = sf::Keyboard::isKeyPressed(sf::Keyboard::F);
+   key[0xA] = sf::Keyboard::isKeyPressed(sf::Keyboard::Z);
+   key[0] = sf::Keyboard::isKeyPressed(sf::Keyboard::X);
+   key[0xB] = sf::Keyboard::isKeyPressed(sf::Keyboard::C);
+   key[0xF] = sf::Keyboard::isKeyPressed(sf::Keyboard::V);
 
 }
 
@@ -518,8 +450,6 @@ void Chip8::run()
          // Request for closing the window
          if(event.type == sf::Event::Closed)
             window.close();
-         if(event.type == sf::Event::KeyPressed)
-            setKeys(event);
       }
 
       // The clock cycle for the CPU needs to be 60Hz
@@ -533,6 +463,9 @@ void Chip8::run()
       // Draw the graphics
       if(drawFlag)
          drawGraphics();
+
+      // Store key states
+      setKeys();
    }
 
 }

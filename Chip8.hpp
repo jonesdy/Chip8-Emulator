@@ -48,7 +48,7 @@ class Chip8
    void loadFontSet();
    void drawGraphics();
    void tick();
-   void setKeys(sf::Event evt);
+   void setKeys();
    void clearScreen();
 
    // Debugging functions
