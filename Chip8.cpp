@@ -139,6 +139,14 @@ void Chip8::tick()
             pc += 4;
          break;
       }
+   case 0x5000:   // 0x5XY0: Skips the next instruction if VX equals VY
+      {
+         if(V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4])
+            pc += 4;
+         else
+            pc += 2;
+         break;
+      }
    case 0x6000:   // 0x6XNN: Sets VX to NN
       {
          V[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
@@ -162,9 +170,21 @@ void Chip8::tick()
                pc += 2;
                break;
             }
+         case 0x0001:   // 0x8XY1: Sets VX to VX or Y
+            {
+               V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
+               pc += 2;
+               break;
+            }
          case 0x0002:   // 0x8XY2: Sets VX to VX and VY
             {
-               V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] & V[(opcode & 0x00F0) >> 4];
+               V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
+               pc += 2;
+               break;
+            }
+         case 0x0003:   // 0x8XY3: Sets VX to VX xor VY
+            {
+               V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
                pc += 2;
                break;
             }
@@ -188,6 +208,13 @@ void Chip8::tick()
                pc += 2;
                break;
             }
+         case 0x0006:   // 0x8XY6: Shifts VX right by one.  VF is set to the least significant bit of VX before the shift
+            {
+               V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x01;
+               V[(opcode & 0x0F00) >> 8] >>= 1;
+               pc += 2;
+               break;
+            }
          case 0x0007:   // 0x8XY7: Sets VX to VY minus VX.  VF is set to 0 when there's a borrow, and 1 when there isn't
             {
                if(V[(opcode & 0x00F0) >> 4] < V[(opcode & 0x0F00) >> 8])      // VY < VX, borrow
@@ -198,6 +225,13 @@ void Chip8::tick()
                pc += 2;
                break;
             }
+         case 0x000E:   // 0x8XYE: Shifts VX left by one.  VF is set to the most significant bit of VX before the shift
+            {
+               V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x80;
+               V[(opcode & 0x0F00) >> 8] <<= 1;
+               pc += 2;
+               break;
+            }
          default:
             {
                std::cout<<"Unknown opcode: 0x"<<std::hex<<opcode<<"\n";
@@ -205,10 +239,23 @@ void Chip8::tick()
          }
          break;
       }
+   case 0x9000:   // 0x9XY0: Skips the next instruction if VX doesn't equal VY
+      {
+         if(V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4])
+            pc += 4;
+         else
+            pc += 2;
+         break;
+      }
    case 0xA000:   // 0xANNN: Sets I to the address NNN
       {
          I = opcode & 0x0FFF;
          pc += 2;
+         break;
+      }
+   case 0xB000:   // 0xBNNN: Jumps to the address NNN plus V0
+      {
+         pc = (opcode & 0x0FFF) + V[0];
          break;
       }
    case 0xC000:   // 0xCXNN: Sets VX to a random number and NN
@@ -282,6 +329,11 @@ void Chip8::tick()
                pc += 2;
                break;
             }
+         case 0x000A:   // 0xFX0A: A key press is awaited, and then stored in VX
+            {
+               std::cout<<"0xFX0A not implemented yet\n";
+               break;
+            }
          case 0x0015:   // 0xFX15: Sets the delay timer to VX
             {
                delayTimer = V[(opcode & 0x0F00) >> 8];
@@ -291,6 +343,12 @@ void Chip8::tick()
          case 0x0018:   // 0xFX18: Sets the sound timer to VX
             {
                soundTimer = V[(opcode & 0x0F00) >> 8];
+               pc += 2;
+               break;
+            }
+         case 0x001E:   // 0xFX1E: Adds VX to I
+            {
+               I += V[(opcode & 0x0F00) >> 8];
                pc += 2;
                break;
             }
@@ -306,6 +364,14 @@ void Chip8::tick()
                memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
                memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
                memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
+               pc += 2;
+               break;
+            }
+         case 0x0055:   // 0xFX55: Stores V0 to VX in memory starting at address I
+            {
+               unsigned char numRegs = (opcode & 0x0F00) >> 8;
+               for(int i = 0; i < numRegs; i++)
+                  memory[I + (i * 2)] = V[i];
                pc += 2;
                break;
             }
