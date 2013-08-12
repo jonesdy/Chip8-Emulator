@@ -227,7 +227,7 @@ void Chip8::tick()
          unsigned short pix;
 
          V[0xF] = 0;
-         for(int yline = 0; yline <  height; yline++)
+         for(int yline = 0; yline < height; yline++)
          {
             pix = memory[I + yline];
             for(int xline = 0; xline < 8; xline++)
@@ -336,7 +336,8 @@ void Chip8::tick()
 
    if(soundTimer > 0)
    {
-      std::cout<<"\a";
+      if(soundTimer == 1)
+         std::cout<<"\a";
       soundTimer--;
    }
 
