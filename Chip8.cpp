@@ -23,7 +23,8 @@ Chip8::Chip8()
    for(int i = 0; i < STACK_SIZE; i++)
       stack[i] = 0;
    sp = 0;
-   clearKeys();
+   for(int i = 0; i < NUM_KEYS; i++)
+      key[i] = 0;
    drawFlag = false;
    srand(time(NULL));
 
