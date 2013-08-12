@@ -25,7 +25,7 @@ Chip8::Chip8()
    sp = 0;
    for(int i = 0; i < NUM_KEYS; i++)
       key[i] = 0;
-   drawFlag = false;
+   drawFlag = true;
    srand(time(NULL));
 
    // Load fontset
@@ -385,7 +385,7 @@ void Chip8::tick()
             }
          case 0x0055:   // 0xFX55: Stores V0 to VX in memory starting at address I
             {
-               for(int i = 0; i < ((opcode & 0x0F00) >> 8); i++)
+               for(int i = 0; i <= ((opcode & 0x0F00) >> 8); i++)
                   memory[I + i] = V[i];
 
                // Need to change I as well
@@ -395,7 +395,7 @@ void Chip8::tick()
             }
          case 0x0065:   // 0xFX65: Fills V0 to VX with values from memory starting at address I
             {
-               for(int i = 0; i < ((opcode & 0x0F00) >> 8); i++)
+               for(int i = 0; i <= ((opcode & 0x0F00) >> 8); i++)
                   V[i] = memory[I + i];
 
                // Need to change I as well
