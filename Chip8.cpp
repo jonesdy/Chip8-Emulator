@@ -494,7 +494,7 @@ void Chip8::dumpKeys()
 void Chip8::loadProgram(std::string fileName)
 {
 
-   std::ifstream input(fileName, std::ifstream::binary);
+   std::ifstream input(fileName.c_str(), std::ifstream::binary);
 
    if(input)
    {
