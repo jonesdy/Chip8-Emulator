@@ -1,11 +1,14 @@
 #include "Chip8.hpp"
 
-int main()
+int main(int argc, char* argv[])
 {
 
    Chip8 chip8;
 
-   chip8.loadProgram("PONG");
+   if(argc <= 1)
+      chip8.loadProgram("PONG");
+   else
+      chip8.loadProgram(argv[1]);
 
    chip8.run();
 
